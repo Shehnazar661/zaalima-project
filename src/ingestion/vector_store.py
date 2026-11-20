@@ -14,7 +14,9 @@ def get_client():
     global _client
     if _client is None:
         _client = MilvusClient(DB_PATH)
-    return _client
+        if _client.has_collection(COLLECTION):
+            _client.load_collection(COLLECTION)
+    return _client 
 
 
 def init_collection():
@@ -36,6 +38,9 @@ def upsert_chunks(chunks):
 
 
 def search(query_vector, k=5, peer_reviewed_only=False):
+    def search(query_vector, k=5, peer_reviewed_only=False):
+        get_client().load_collection(COLLECTION)
+    flt = "peer_reviewed == true" if peer_reviewed_only else ""
     flt = "peer_reviewed == true" if peer_reviewed_only else ""
     res = get_client().search(
         COLLECTION, data=[query_vector], limit=k, filter=flt,
